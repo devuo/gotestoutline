@@ -22,6 +22,8 @@ type (
 		LBrace int      `json:"lbrace"`
 		RBrace int      `json:"rbrace"`
 	}
+
+	fileOpen func(path string) (io.ReadCloser, error)
 )
 
 const (
@@ -31,31 +33,28 @@ const (
 )
 
 func main() {
-	var err error
+	fatal(rootCommand(os.Args, os.Stdout, func(path string) (io.ReadCloser, error) {
+		return os.Open(path)
+	}))
+}
 
-	switch len(os.Args) {
-	case 2:
-		err = outlineCommand(os.Args[1], os.Stdout, func(path string) (io.ReadCloser, error) {
-			return os.Open(path)
-		})
-	default:
-		err = helpCommand(os.Stdout)
-	}
-
-	if err != nil {
-		log.Fatal(err)
+func rootCommand(args []string, w io.Writer, open fileOpen) error {
+	if len(args) == 2 {
+		return outlineCommand(args[1], w, open)
+	} else {
+		return helpCommand(w)
 	}
 }
 
-func outlineCommand(filepath string, w io.Writer, open func(string) (io.ReadCloser, error)) error {
+func outlineCommand(filepath string, w io.Writer, open fileOpen) error {
 	file, err := open(filepath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	tests, err := generateOutline(file)
+	tests, err := outline(file)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return json.NewEncoder(w).Encode(tests)
@@ -71,7 +70,7 @@ Usage:
 	return err
 }
 
-func generateOutline(src any) ([]*Test, error) {
+func outline(src any) ([]*Test, error) {
 	tests := make([]*Test, 0)
 
 	f, err := parser.ParseFile(token.NewFileSet(), "", src, parser.AllErrors)
@@ -180,4 +179,10 @@ func generateOutline(src any) ([]*Test, error) {
 	}
 
 	return tests, nil
+}
+
+func fatal(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }

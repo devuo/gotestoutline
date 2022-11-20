@@ -58,7 +58,7 @@ func NotATest(t testing) {
 }
 `
 
-	tests, err := generateOutline(src)
+	tests, err := outline(src)
 	assert.NoError(t, err)
 	assert.Equal(t, []*Test{
 		{
