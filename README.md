@@ -1,6 +1,6 @@
 # gotestoutline
 
-CLI tool that outputs tests and subtests outline of a go test file in JSON format.
+CLI tool that outputs tests and subtests outline of a go test source file in JSON format.
 
 ## Installing
 
