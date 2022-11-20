@@ -63,12 +63,12 @@ type Test struct {
     // Name of the test
     Name   string   `json:"name"`
     // Type of test
-    Type   Type  `json:"type"`
+    Type   Type     `json:"type"`
     // Path to this test, including parent test names
     Path   []string `json:"path"`
     // Line where the test begins
-    LBrace int    `json:"lbrace"`
+    LBrace int      `json:"lbrace"`
     // Line where the test ends
-    RBrace int    `json:"rbrace"`
+    RBrace int      `json:"rbrace"`
 }
 ```
