@@ -54,9 +54,9 @@ This will write an output like the following to stdout:
 
 ```go
 const (
-	TestType           Type = "test"
-	SubtestType        Type = "subtest"
-	DynamicSubtestType Type = "dynamicsubtest"
+    TestType           Type = "test"
+    SubtestType        Type = "subtest"
+    DynamicSubtestType Type = "dynamicsubtest"
 )
 
 type Test struct {
