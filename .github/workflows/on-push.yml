@@ -1,0 +1,23 @@
+on: push
+jobs:
+  test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    concurrency: cancel-in-progress
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - run: go test -cover -coverprofile=cover.out ./...
