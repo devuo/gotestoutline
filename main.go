@@ -61,7 +61,7 @@ func outlineCommand(filepath string, w io.Writer, open fileOpen) error {
 }
 
 func helpCommand(w io.Writer) error {
-	_, err := fmt.Fprint(w, `gotestoutline is a tool to generate go test outlines
+	_, err := fmt.Fprint(w, `gotestoutline is tool that outputs tests and subtests outline of a go test file in JSON format
 
 Usage:
 	gotestoutline <go-test-file-path>
