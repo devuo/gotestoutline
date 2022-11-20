@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -30,9 +31,24 @@ const (
 )
 
 func main() {
-	flag.Parse()
+	var err error
 
-	file, err := os.Open(flag.Arg(0))
+	switch len(os.Args) {
+	case 2:
+		err = outlineCommand(os.Args[1], os.Stdout, func(path string) (io.ReadCloser, error) {
+			return os.Open(path)
+		})
+	default:
+		err = helpCommand(os.Stdout)
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func outlineCommand(filepath string, w io.Writer, open func(string) (io.ReadCloser, error)) error {
+	file, err := open(filepath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +58,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(os.Stdout).Encode(tests)
+	return json.NewEncoder(w).Encode(tests)
+}
+
+func helpCommand(w io.Writer) error {
+	_, err := fmt.Fprint(w, `gotestoutline is a tool to generate go test outlines
+
+Usage:
+	gotestoutline <go-test-file-path>
+`)
+
+	return err
 }
 
 func generateOutline(src any) ([]*Test, error) {
@@ -113,37 +139,38 @@ func generateOutline(src any) ([]*Test, error) {
 				return true
 			}
 
-			// Subtests whose name is dynamic and not a fixed string cannot
-			// be properly named, however we still list them in the outline
-			// with an empty name.
-			l, ok := t.Args[0].(*ast.BasicLit)
-			if !ok {
-				tests = append(tests, &Test{
-					Name:   "",
-					Type:   DynamicSubtestType,
-					Path:   []string{},
-					LBrace: int(t.Lparen),
-					RBrace: int(t.Rparen),
-				})
-
-				return true
-			}
-
-			tests = append(tests, &Test{
-				Name:   strings.Trim(l.Value, `"'`),
-				Type:   SubtestType,
+			test := &Test{
 				Path:   []string{},
+				Type:   SubtestType,
 				LBrace: int(t.Lparen),
 				RBrace: int(t.Rparen),
-			})
+			}
+
+			// Report cases where sub test name is dynamic and not a fixed
+			// string, as IDEs might still want to do something with it.
+			l, ok := t.Args[0].(*ast.BasicLit)
+			if ok {
+				test.Name = strings.Trim(l.Value, `"'`)
+			} else {
+				test.Type = DynamicSubtestType
+			}
+
+			tests = append(tests, test)
 		}
 
 		return true
 	})
 
-	// Assemble the path to the sub-test
+	// Assemble the path to each subtest
+	lastTestIndex := 0
+
 	for i, test := range tests {
-		for j := 0; j < i; j++ {
+		if test.Type == TestType {
+			lastTestIndex = i
+			continue
+		}
+
+		for j := lastTestIndex; j < i; j++ {
 			parent := tests[j]
 
 			if parent.RBrace > test.LBrace {

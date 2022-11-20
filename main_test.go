@@ -7,45 +7,56 @@ import (
 )
 
 func Test_generateOutline(t *testing.T) {
-	src := `package testdata
+	src := `package app_test
 
 import (
-	cenas "testing"
+	alias "testing"
 )
 
-func TestFirst(a *cenas.T) {
-	a.Run("First A", func(b *cenas.T) {
-		b.Run("First A 1", func(c *cenas.T) {
+func TestFirst(a *alias.T) {
+	a.Run("First A", func(b *alias.T) {
+		b.Run("First A 1", func(c *alias.T) {
 			for i := 0; i < 10; i++ {
-				c.Run("First A 1 Alpha" + i, func(d *cenas.T) {
+				c.Run("First A 1 Alpha" + i, func(d *alias.T) {
 
 				})
 			}
 
-			c.Run("First A 1 Beta", func(d *cenas.T) {
+			c.Run("First A 1 Beta", func(d *alias.T) {
 
 			})
 		})
 
-		b.Run("First A 2", func(c *cenas.T) {
+		b.Run("First A 2", func(c *alias.T) {
 
 		})
 	})
 
-	a.Run("First B", func(b *cenas.T) {
-		b.Run("First B 1", func(c *cenas.T) {
+	a.Run("First B", func(b *alias.T) {
+		b.Run("First B 1", func(c *alias.T) {
 
 		})
 	})
 }
 
-func TestSecond(a *cenas.T) {
-	a.Run("Second A", func(b *cenas.T) {
+func TestSecond(a *alias.T) {
+	a.Run("Second A", func(b *alias.T) {
 		b.Run("Second A 1", func(c *cenas.T) {
 
 		})
 	})
-}`
+}
+
+type testing interface {
+	Run(string, func (*alias.T) void)
+}
+
+func NotATest(t testing) {
+	t.Run("Hello World", func (a *alias.T) {
+		
+	})
+}
+`
 
 	tests, err := generateOutline(src)
 	assert.NoError(t, err)
