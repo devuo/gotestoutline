@@ -45,8 +45,7 @@ This will write an output like the following to stdout:
         "path": ["TestMain"],
         "lbrace": 138,
         "rbrace": 189,
-    },
-    ...
+    }
 ]
 ```
 
@@ -66,9 +65,9 @@ type Test struct {
     Type   Type     `json:"type"`
     // Path to this test, including parent test names
     Path   []string `json:"path"`
-    // Line where the test begins
+    // Character position of the test opening brace / parenthesis
     LBrace int      `json:"lbrace"`
-    // Line where the test ends
+    // Character position of the test closing brace / parenthesis
     RBrace int      `json:"rbrace"`
 }
 ```
